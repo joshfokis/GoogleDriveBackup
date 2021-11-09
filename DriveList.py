@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-import sys
 
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
+from typing import List
+
+from pydrive2.auth import GoogleAuth
+from pydrive2.drive import GoogleDrive
+
 
 def ListFolder(parent):
   filelist=[]
@@ -11,31 +13,18 @@ def ListFolder(parent):
   for f in file_list:
     if f['mimeType']=='application/vnd.google-apps.folder': # if folder
         filelist.append({"id":f['id'],"title":f['title'],"list":ListFolder(f['id'])})
-    else:
-        filelist.append(f['title'])
+    # else:
+    #     filelist.append(f['title'])
   return filelist
 
-def dump(obj, nested_level=0, output=sys.stdout):
-    spacing = '   '
-    if type(obj) == dict:
-        print >> output, '%s{' % ((nested_level) * spacing)
-        for k, v in obj.items():
-            if hasattr(v, '__iter__'):
-                print >> output, '%s%s:' % ((nested_level + 1) * spacing, k)
-                dump(v, nested_level + 1, output)
-            else:
-                print >> output, '%s%s: %s' % ((nested_level + 1) * spacing, k, v)
-        print >> output, '%s}' % (nested_level * spacing)
-    elif type(obj) == list:
-        print >> output, '%s[' % ((nested_level) * spacing)
-        for v in obj:
-            if hasattr(v, '__iter__'):
-                dump(v, nested_level + 1, output)
-            else:
-                print >> output, '%s%s' % ((nested_level + 1) * spacing, v)
-        print >> output, '%s]' % ((nested_level) * spacing)
-    else:
-        print >> output, '%s%s' % (nested_level * spacing, obj)
+
+def main():
+    folders = ListFolder('root')
+    drive_folder = input("Name of folder in Google Drive to back-up to:\n> ")
+    for p in folders:
+        if p.get('title') == drive_folder:
+            print(f'This is the id of your folder: {p.get("id")}')
+    
 
 gauth = GoogleAuth()
 
@@ -55,4 +44,6 @@ gauth.SaveCredentialsFile("mycreds.txt")
 
 drive = GoogleDrive(gauth)
 
-dump(ListFolder('root'))
+
+if __name__ == "__main__":
+    main()
